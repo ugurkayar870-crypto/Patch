@@ -1,208 +1,290 @@
 <!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><title>Devre Bağlantıları</title>
+<html lang="tr"><head><meta charset="utf-8"><title>Devre Kurulumu</title>
 <style>
-@page { size: A4; margin: 16mm 15mm; }
-body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 10.5pt; color:#111; line-height:1.4; }
+@page { size: A4; margin: 14mm 14mm; }
+body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 10.5pt; color:#111; line-height:1.45; }
 h1 { font-size: 19pt; margin:0 0 4px; }
-h2 { font-size: 13.5pt; margin: 18px 0 6px; padding:4px 8px; background:#1f3b57; color:#fff; border-radius:4px; }
-h3 { font-size: 11.5pt; margin: 12px 0 4px; }
-table { border-collapse: collapse; width:100%; margin:4px 0 8px; }
-th, td { border:1px solid #999; padding:4px 6px; text-align:left; vertical-align:top; }
+h2 { font-size: 13.5pt; margin: 16px 0 6px; padding:4px 8px; background:#1f3b57; color:#fff; border-radius:4px; break-after: avoid; }
+h3 { font-size: 11.5pt; margin: 10px 0 4px; break-after: avoid; }
+table { border-collapse: collapse; width:100%; margin:4px 0 8px; break-inside: avoid; }
+th, td { border:1px solid #999; padding:3px 6px; text-align:left; vertical-align:top; }
 th { background:#e8eef4; }
-.uyari { border:2px solid #c0392b; background:#fdecea; padding:6px 10px; border-radius:4px; margin:8px 0; }
-.not { border:1px solid #2e86c1; background:#eaf4fb; padding:6px 10px; border-radius:4px; margin:8px 0; }
-.kutu { display:inline-block; width:11px; height:11px; border:1.5px solid #333; margin-right:6px; vertical-align:-1px; }
-ul.check { list-style:none; padding-left:4px; } ul.check li { margin:3px 0; }
-h2,h3 { break-after: avoid; } table,svg,.not,.uyari,ul.check,.blok { break-inside: avoid; }
+.uyari { border:2px solid #c0392b; background:#fdecea; padding:6px 10px; border-radius:4px; margin:8px 0; break-inside: avoid; }
+.not { border:1px solid #2e86c1; background:#eaf4fb; padding:6px 10px; border-radius:4px; margin:8px 0; break-inside: avoid; }
+.adim { display:flex; gap:8px; margin:5px 0; break-inside: avoid; }
+.no { flex:0 0 26px; height:26px; border-radius:50%; background:#1f3b57; color:#fff; font-weight:bold; text-align:center; line-height:26px; font-size:10pt; }
+.adim .k { flex:0 0 14px; height:14px; border:1.5px solid #333; margin-top:5px; }
+.adim div.t { flex:1; }
+.sayfa { break-before: page; }
 code { background:#f2f2f2; padding:0 3px; border-radius:3px; }
 .kucuk { font-size:9pt; color:#444; }
 svg text { font-family: "DejaVu Sans", Arial, sans-serif; }
+.iki { display:flex; gap:14px; align-items:flex-start; }
+.iki > div { flex:1; }
+.bos { display:inline-block; min-width:90px; border-bottom:1px solid #333; }
 </style></head><body>
 
-<h1>Bağlama Synth – Devre Bağlantıları</h1>
-<div class="kucuk">Teensy 4.1 · PCM5102A · UMC22 · Nektar Impact LX88+ · Proje klasörü: <code>docs/devre_baglantilari.pdf</code></div>
+<h1>Bağlama Synth – Devre Kurulumu (adım adım)</h1>
+<div class="kucuk">Her numarada <b>tek bir iş</b> var. Bitirdiğin adımın kutusunu işaretle. Takıldığın yerde numarayı bana yaz (ör. "14'te takıldım").</div>
 
-<div class="uyari"><b>Güvenlik – önce bunu oku</b>
-<ul>
-<li>Kablo takıp çıkarırken <b>Teensy'nin USB'si takılı olmasın</b> (elektrik kesik olsun).</li>
-<li>Teensy 4.1 pinleri <b>5V'a dayanıklı değil</b>. Hiçbir pine 5V verme (VIN hariç, o zaten 5V girişi).</li>
-<li>Analog girişe (A2) sadece 0–3,3V arası gelmeli. <b>UMC22'nin çıkış (Output) düğmesini düşük-orta tut.</b></li>
-<li>Hoparlör ya da kulaklık <b>asla doğrudan Teensy pinine</b> bağlanmaz. Ses PCM5102A'nın 3,5 mm jakından alınır.</li>
-<li>Kulaklıkla dinlerken ilk seferde sesi kısık başlat.</li>
+<div class="uyari"><b>Önce bunları oku</b>
+<ul style="margin:4px 0">
+<li>Kablo takarken ve çıkarırken <b>Teensy'nin USB kablosu takılı olmasın</b>.</li>
+<li>Teensy pinleri <b>5V'a dayanıklı değil</b>. 5V sadece <b>VIN</b> pininden PCM5102A'ya gider, başka hiçbir yere gitmez.</li>
+<li>UMC22'nin <b>çıkış düğmesini düşük-orta</b> tut.</li>
+<li>Kulaklığı ilk seferde <b>sesi kısık</b> tak.</li>
 </ul></div>
 
-<h2>1. Malzeme listesi</h2>
-<table>
-<tr><th>Parça</th><th>Adet</th><th>Ne için</th></tr>
-<tr><td>Teensy 4.1</td><td>1</td><td>Beyin (mikrodenetleyici)</td></tr>
-<tr><td>PCM5102A DAC modülü (mor, GY-PCM5102)</td><td>1</td><td>Ses çıkışı (3,5 mm jak)</td></tr>
-<tr><td>Breadboard (yarım boy) + jumper kablolar</td><td>1</td><td>Devreyi kurmak</td></tr>
-<tr><td>10 kΩ direnç</td><td>2</td><td>Analog girişi 1,65V'a oturtmak</td></tr>
-<tr><td>1 kΩ direnç</td><td>1</td><td>A2 pinini korumak</td></tr>
-<tr><td>10 µF elektrolitik kondansatör</td><td>1</td><td>UMC22'nin sesini geçirir, DC'yi engeller</td></tr>
-<tr><td>Buton (tact switch)</td><td>4</td><td>Mod ve çalgı seçimi</td></tr>
-<tr><td>Ucu kesilmiş jak kablosu</td><td>1</td><td>UMC22 çıkışı → Teensy</td></tr>
-<tr><td>Kesilmiş USB uzatma kablosu (dişi uç)</td><td>1</td><td>Nektar klavye → Teensy USB host</td></tr>
-<tr><td>microSD kart (FAT32)</td><td>1</td><td>Çalgı kayıtları (sonraki aşamalar)</td></tr>
-<tr><td>Multimetre</td><td>1</td><td>Kablo renklerini ve gerilimi ölçmek</td></tr>
-</table>
-
-<h2>2. Lehim listesi (hocaya gösterilecek)</h2>
-<table>
-<tr><th>#</th><th>Ne lehimlenecek</th><th>Not</th></tr>
-<tr><td>1</td><td>Teensy 4.1'in iki yanına <b>erkek pin başlıkları</b> (24'er pin)</td><td>Kartta pin yoksa. Breadboard'a takılabilsin diye.</td></tr>
-<tr><td>2</td><td>Teensy 4.1'in <b>USB host</b> 5 pinine pin başlığı (ya da doğrudan kablo)</td><td>Kartın üst ucunda, USB girişinin yakınındaki 5'li sıra: 5V, D−, D+, GND, GND (karttaki yazıya bak).</td></tr>
-<tr><td>3</td><td>PCM5102A modülüne <b>pin başlığı</b> (6 pin)</td><td>Modülle gelir.</td></tr>
-<tr><td>4</td><td>PCM5102A <b>arka yüzündeki lehim köprüleri</b></td><td>1 = L, 2 = L, 3 = H, 4 = L. Aşağıda Bölüm 4'e bak. Önce fotoğrafını çek.</td></tr>
-<tr><td>5</td><td><b>USB uzatma kablosunun</b> 4 teline jumper uçları</td><td>Renkleri multimetreyle doğrula (Bölüm 6).</td></tr>
-<tr><td>6</td><td><b>Jak kablosunun</b> 2 teline (uç ve gövde) jumper uçları</td><td>Hangi telin uç (tip) olduğunu multimetreyle bul (Bölüm 5).</td></tr>
-</table>
-
-<h2>3. Genel şema</h2>
-<svg viewBox="0 0 700 300" width="100%">
- <defs><marker id="ok" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8z" fill="#333"/></marker></defs>
- <g font-size="13">
- <rect x="10" y="20" width="120" height="50" rx="6" fill="#fdf2e0" stroke="#333"/><text x="70" y="42" text-anchor="middle">Bağlama</text><text x="70" y="60" text-anchor="middle" font-size="11">(piezo)</text>
- <rect x="180" y="20" width="130" height="50" rx="6" fill="#fdf2e0" stroke="#333"/><text x="245" y="42" text-anchor="middle">UMC22</text><text x="245" y="60" text-anchor="middle" font-size="11">ön amfi</text>
- <rect x="370" y="100" width="150" height="110" rx="8" fill="#e3f0e3" stroke="#333" stroke-width="2"/><text x="445" y="150" text-anchor="middle" font-size="16" font-weight="bold">Teensy 4.1</text><text x="445" y="172" text-anchor="middle" font-size="11">(gen~ synth burada)</text>
- <rect x="560" y="120" width="130" height="50" rx="6" fill="#ece3f5" stroke="#333"/><text x="625" y="142" text-anchor="middle">PCM5102A</text><text x="625" y="160" text-anchor="middle" font-size="11">3,5 mm jak → kulaklık</text>
- <rect x="560" y="20" width="130" height="50" rx="6" fill="#eee" stroke="#333"/><text x="625" y="50" text-anchor="middle">Hoparlör (ham ses)</text>
- <rect x="180" y="230" width="140" height="50" rx="6" fill="#e3ecf8" stroke="#333"/><text x="250" y="252" text-anchor="middle">Nektar LX88+</text><text x="250" y="270" text-anchor="middle" font-size="11">USB MIDI</text>
- <rect x="10" y="130" width="140" height="50" rx="6" fill="#fff8d6" stroke="#333"/><text x="80" y="152" text-anchor="middle">Giriş devresi</text><text x="80" y="170" text-anchor="middle" font-size="11">2×10k, 1k, 10µF</text>
- <rect x="560" y="230" width="130" height="50" rx="6" fill="#eee" stroke="#333"/><text x="625" y="252" text-anchor="middle">4 buton</text><text x="625" y="270" text-anchor="middle" font-size="11">pin 2–5</text>
+<!-- ======================= BÖLÜM A ======================= -->
+<h2>A. Breadboard nasıl çalışır?</h2>
+<div class="iki">
+<div>
+<svg viewBox="0 0 330 250" width="100%">
+ <rect x="5" y="5" width="320" height="240" rx="8" fill="#f6f6f2" stroke="#999"/>
+ <!-- raylar -->
+ <line x1="22" y1="20" x2="22" y2="235" stroke="#2457c5" stroke-width="2"/>
+ <line x1="40" y1="20" x2="40" y2="235" stroke="#d22" stroke-width="2"/>
+ <g fill="#555">
+  <circle cx="22" cy="40" r="3"/><circle cx="22" cy="60" r="3"/><circle cx="22" cy="80" r="3"/><circle cx="22" cy="100" r="3"/><circle cx="22" cy="120" r="3"/><circle cx="22" cy="140" r="3"/><circle cx="22" cy="160" r="3"/><circle cx="22" cy="180" r="3"/><circle cx="22" cy="200" r="3"/>
+  <circle cx="40" cy="40" r="3"/><circle cx="40" cy="60" r="3"/><circle cx="40" cy="80" r="3"/><circle cx="40" cy="100" r="3"/><circle cx="40" cy="120" r="3"/><circle cx="40" cy="140" r="3"/><circle cx="40" cy="160" r="3"/><circle cx="40" cy="180" r="3"/><circle cx="40" cy="200" r="3"/>
  </g>
- <g stroke="#333" stroke-width="1.8" fill="none" marker-end="url(#ok)">
-  <path d="M130,45 L178,45"/><path d="M310,40 L558,40"/><path d="M245,70 L245,100 L80,100 L80,128"/>
-  <path d="M150,155 L368,155"/><path d="M520,145 L558,145"/><path d="M320,255 L370,255 L400,212"/><path d="M558,255 L500,212"/>
+ <!-- sıralar -->
+ <g>
+  <rect x="66" y="72" width="104" height="16" rx="8" fill="#ffe28a" stroke="#c9a400"/>
+  <rect x="196" y="72" width="104" height="16" rx="8" fill="#b9e3b9" stroke="#3a9a3a"/>
  </g>
- <g font-size="10.5" fill="#333">
-  <text x="390" y="35">Çıkış 1 → ham ses</text><text x="90" y="95">Çıkış 2 → jak kablosu</text>
-  <text x="220" y="150">A2 (pin 16)</text><text x="525" y="138">I2S</text><text x="300" y="225">USB host</text>
+ <g fill="#555">
+  <circle cx="76" cy="60" r="3"/><circle cx="96" cy="60" r="3"/><circle cx="116" cy="60" r="3"/><circle cx="136" cy="60" r="3"/><circle cx="156" cy="60" r="3"/>
+  <circle cx="76" cy="80" r="3"/><circle cx="96" cy="80" r="3"/><circle cx="116" cy="80" r="3"/><circle cx="136" cy="80" r="3"/><circle cx="156" cy="80" r="3"/>
+  <circle cx="76" cy="100" r="3"/><circle cx="96" cy="100" r="3"/><circle cx="116" cy="100" r="3"/><circle cx="136" cy="100" r="3"/><circle cx="156" cy="100" r="3"/>
+  <circle cx="206" cy="60" r="3"/><circle cx="226" cy="60" r="3"/><circle cx="246" cy="60" r="3"/><circle cx="266" cy="60" r="3"/><circle cx="286" cy="60" r="3"/>
+  <circle cx="206" cy="80" r="3"/><circle cx="226" cy="80" r="3"/><circle cx="246" cy="80" r="3"/><circle cx="266" cy="80" r="3"/><circle cx="286" cy="80" r="3"/>
+  <circle cx="206" cy="100" r="3"/><circle cx="226" cy="100" r="3"/><circle cx="246" cy="100" r="3"/><circle cx="266" cy="100" r="3"/><circle cx="286" cy="100" r="3"/>
+ </g>
+ <rect x="174" y="20" width="18" height="215" fill="#ddd"/>
+ <g font-size="11" fill="#111">
+  <text x="66" y="40">a  b  c  d  e</text><text x="198" y="40">f  g  h  i  j</text>
+  <text x="50" y="84" font-size="10">5</text>
+  <text x="168" y="135" font-size="10" transform="rotate(-90 183 135)">ortadaki oluk</text>
+  <text x="62" y="128">Sarı: 5. sıranın sol yarısı.</text>
+  <text x="62" y="143">Bu 5 delik birbirine bağlı.</text>
+  <text x="62" y="168">Yeşil: 5. sıranın sağ yarısı.</text>
+  <text x="62" y="183">Sarıyla bağlantısı YOK.</text>
+  <text x="50" y="218" font-size="10">mavi = −   kırmızı = +</text>
  </g>
 </svg>
-<p class="kucuk">Yarın sırayla kur ve her bloğu ayrı dene: önce <b>Bölüm 4</b> (ses çıkışı), sonra 5, 6, 7.</p>
+</div>
+<div>
+<p><b>3 kural yeter:</b></p>
+<p><b>1. Sıra:</b> Aynı numaralı sırada <b>a-b-c-d-e</b> delikleri birbirine bağlıdır. <b>f-g-h-i-j</b> delikleri de kendi aralarında bağlıdır. Max'teki gibi düşün: aynı sıraya takılan her şey birbirine <b>görünmez bir kabloyla</b> bağlanmış olur.</p>
+<p><b>2. Oluk:</b> Ortadaki oluk iki yarıyı <b>ayırır</b>. Sol yarı ile sağ yarı birbirine bağlı değildir.</p>
+<p><b>3. Raylar:</b> Kenardaki uzun çizgiler <b>boydan boya</b> bağlıdır. <span style="color:#d22">Kırmızı çizgili = +</span>, <span style="color:#2457c5">mavi çizgili = −</span>. Biz sol kenardaki rayları kullanacağız: <b>+ ray = 3,3V</b>, <b>− ray = GND</b>.</p>
+<p class="kucuk">Breadboard'u <b>dik</b> koy. Sıra numaraları 1 üstte, 30 altta olsun. Harfler soldan sağa a…j olsun.</p>
+</div>
+</div>
 
-<h2>4. Blok 1 – Ses çıkışı: Teensy → PCM5102A</h2>
+<!-- ======================= BÖLÜM B ======================= -->
+<h2>B. Lehim (hoca yapabilir) – kuruluma başlamadan önce</h2>
 <table>
-<tr><th>Teensy 4.1 pini</th><th>PCM5102A pini</th><th>Kablo rengi (öneri)</th></tr>
-<tr><td>VIN (5V)</td><td>VIN</td><td>kırmızı</td></tr>
-<tr><td>GND</td><td>GND</td><td>siyah</td></tr>
-<tr><td>Pin 21 (BCLK1)</td><td>BCK</td><td>sarı</td></tr>
-<tr><td>Pin 20 (LRCLK1)</td><td>LCK</td><td>yeşil</td></tr>
-<tr><td>Pin 7 (OUT1A)</td><td>DIN</td><td>mavi</td></tr>
-<tr><td>GND</td><td>SCK</td><td>siyah</td></tr>
+<tr><th>#</th><th>Ne</th><th>Dikkat</th></tr>
+<tr><td>L1</td><td>Teensy 4.1'in iki uzun kenarına erkek pin başlıkları (24'er pin)</td><td>Pinler <b>aşağı</b> baksın (breadboard'a girecek).</td></tr>
+<tr><td>L2</td><td>USB uzatma kablosunun 4 telini Teensy'nin <b>USB host</b> pinlerine (5V, D−, D+, GND)</td><td>Önce Bölüm F'deki renk kontrolünü yap. Teller kartın <b>üstünden</b> çıksın, breadboard'a değmesin.</td></tr>
+<tr><td>L3</td><td>PCM5102A modülüne 6'lı pin başlığı</td><td>Modülle gelir.</td></tr>
+<tr><td>L4</td><td>PCM5102A'nın arka yüzündeki köprüler: <b>1 = L, 2 = L, 3 = H, 4 = L</b></td><td>Önce fotoğrafını çekip bana at. Belki zaten doğrudur.</td></tr>
+<tr><td>L5</td><td>Jak kablosunun 2 teline jumper uç (ya da tek damar tel)</td><td>Breadboard'a takılabilsin diye.</td></tr>
 </table>
-<div class="not"><b>Neden SCK → GND?</b> PCM5102A kendi saatini (PLL) üretsin diye. Teensy'den ayrıca saat kablosu çekmeye gerek kalmaz.</div>
-<h3>Arka yüzdeki lehim köprüleri</h3>
-<table>
-<tr><th>Köprü</th><th>Ayar</th><th>Anlamı</th></tr>
-<tr><td>1 (FLT)</td><td>L</td><td>normal filtre</td></tr>
-<tr><td>2 (DEMP)</td><td>L</td><td>de-emphasis kapalı</td></tr>
-<tr><td>3 (XSMT)</td><td><b>H</b></td><td>susturma kapalı (bu L olursa ses gelmez!)</td></tr>
-<tr><td>4 (FMT)</td><td>L</td><td>I2S biçimi</td></tr>
-</table>
-<p class="kucuk">Köprülerin fotoğrafını çekip bana at, doğru mu bakalım.</p>
-<h3>Kontrol</h3>
-<ul class="check">
-<li><span class="kutu"></span>6 kablo takıldı, tabloyla tek tek karşılaştırıldı.</li>
-<li><span class="kutu"></span>USB takınca PCM5102A'nın ışığı yanıyor (modülde varsa).</li>
-<li><span class="kutu"></span>Aşama 1 kodu yüklenince kulaklıkta 440 Hz sinüs duyuluyor.</li>
-</ul>
 
-<div class="blok"><h2>5. Blok 2 – Analog giriş devresi (UMC22 → A2)</h2>
-<p>UMC22'nin sesi artı-eksi salınır. Teensy ise sadece 0–3,3V okuyabilir. Bu devre sesi <b>1,65V'un etrafına</b> oturtur (ortaya kaldırır).</p>
-<svg viewBox="0 0 660 270" width="100%">
+<!-- ======================= BÖLÜM C ======================= -->
+<div class="sayfa"></div>
+<h2>C. Yerleşim planı (bütün devre)</h2>
+<div class="iki">
+<div style="flex:0 0 330px">
+<svg viewBox="0 0 400 560" width="330">
+ <rect x="4" y="22" width="320" height="500" rx="6" fill="#f6f6f2" stroke="#999"/>
+ <line x1="20" y1="30" x2="20" y2="514" stroke="#2457c5" stroke-width="2"/>
+ <line x1="36" y1="30" x2="36" y2="514" stroke="#d22" stroke-width="2"/>
+ <line x1="280" y1="30" x2="280" y2="514" stroke="#d22" stroke-width="1.5" opacity=".5"/>
+ <line x1="296" y1="30" x2="296" y2="514" stroke="#2457c5" stroke-width="1.5" opacity=".5"/>
+ <rect x="148" y="30" width="18" height="484" fill="#ddd"/>
+ <g font-size="9" fill="#333">
+  <text x="66" y="20">a b c d e</text><text x="178" y="20">f g h i j</text>
+  <text x="14" y="20" fill="#2457c5">−</text><text x="32" y="20" fill="#d22">+</text>
+  <text x="48" y="44">1</text><text x="48" y="124">6</text><text x="48" y="204">11</text><text x="48" y="284">16</text><text x="48" y="364">21</text><text x="48" y="436">26</text><text x="48" y="508">30</text>
+ </g>
+ <!-- Teensy -->
+ <rect x="94" y="30" width="112" height="384" rx="4" fill="#2e7d32" opacity=".88"/>
+ <rect x="128" y="6" width="44" height="26" rx="3" fill="#bbb" stroke="#555"/>
+ <text x="150" y="23" font-size="9" text-anchor="middle">USB</text>
+ <text x="150" y="230" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">TEENSY</text>
+ <text x="150" y="248" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">4.1</text>
+ <g fill="#ffd54f"><circle cx="102" cy="40" r="3"/><circle cx="102" cy="168" r="3"/><circle cx="102" cy="264" r="3"/>
+  <circle cx="198" cy="40" r="3"/><circle cx="198" cy="56" r="3"/><circle cx="198" cy="120" r="3"/><circle cx="198" cy="136" r="3"/><circle cx="198" cy="200" r="3"/><circle cx="198" cy="264" r="3"/></g>
+ <g font-size="9" fill="#fff">
+  <text x="108" y="43">GND</text><text x="108" y="171">7</text><text x="108" y="267">3.3V</text>
+  <text x="166" y="43">VIN</text><text x="166" y="59">GND</text><text x="172" y="123">21</text><text x="172" y="139">20</text><text x="156" y="203">16/A2</text><text x="166" y="267">GND</text>
+ </g>
+ <!-- Teensy güç kabloları -->
+ <path d="M70,40 L20,40" stroke="#111" stroke-width="3"/>
+ <path d="M70,264 L36,264" stroke="#d22" stroke-width="3"/>
+ <!-- PCM -->
+ <rect x="252" y="420" width="140" height="100" rx="4" fill="#7b4fa3" opacity=".9"/>
+ <g fill="#ffd54f"><circle cx="246" cy="424" r="3"/><circle cx="246" cy="440" r="3"/><circle cx="246" cy="456" r="3"/><circle cx="246" cy="472" r="3"/><circle cx="246" cy="488" r="3"/><circle cx="246" cy="504" r="3"/></g>
+ <text x="322" y="462" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">PCM5102A</text>
+ <text x="322" y="478" font-size="9" fill="#fff" text-anchor="middle">pinler j sütununda</text>
+ <text x="322" y="490" font-size="9" fill="#fff" text-anchor="middle">25–30. sıra</text>
+ <!-- giriş devresi -->
  <g stroke="#111" stroke-width="2" fill="none">
-  <!-- 3.3V üst -->
-  <path d="M120,30 L120,60"/><rect x="108" y="60" width="24" height="50" fill="#f7e9c8"/><path d="M120,110 L120,140"/>
-  <rect x="108" y="170" width="24" height="50" fill="#f7e9c8"/><path d="M120,140 L120,170"/><path d="M120,220 L120,245"/>
-  <!-- düğüm → A2 -->
-  <path d="M120,140 L40,140"/>
-  <!-- düğüm → 1k -->
-  <path d="M120,140 L230,140"/><rect x="230" y="128" width="60" height="24" fill="#f7e9c8"/><path d="M290,140 L360,140"/>
-  <!-- kondansatör -->
-  <path d="M360,120 L360,160"/><path d="M380,120 L380,160"/><path d="M380,140 L480,140"/>
-  <!-- jak -->
-  <circle cx="500" cy="140" r="6" fill="#111"/>
-  <path d="M560,245 L560,200"/>
-  <path d="M100,245 L140,245"/><path d="M540,245 L580,245"/>
+  <path d="M36,424 L48,424"/><rect x="48" y="418" width="16" height="10" fill="#e8c87a"/><path d="M64,424 L70,440"/>
+  <path d="M86,440 L80,470"/><rect x="66" y="470" width="16" height="10" fill="#e8c87a"/><path d="M66,476 L20,488"/>
+  <path d="M118,440 L118,446"/><rect x="113" y="446" width="10" height="20" fill="#e8c87a"/><path d="M118,466 L118,472"/>
+  <path d="M134,472 L134,482"/><rect x="127" y="482" width="14" height="14" fill="#2a5db0"/><path d="M134,496 L134,504"/>
  </g>
- <g font-size="13" fill="#111">
-  <text x="96" y="22">3,3V</text>
-  <text x="140" y="90">10 kΩ</text><text x="140" y="200">10 kΩ</text>
-  <text x="104" y="262">GND</text><text x="544" y="262">GND</text>
-  <text x="8" y="134" font-weight="bold">A2</text><text x="2" y="160" font-size="11">(pin 16)</text>
-  <text x="236" y="120">1 kΩ</text>
-  <text x="340" y="112" font-size="14" font-weight="bold">+</text><text x="384" y="112" font-size="16" font-weight="bold">−</text>
-  <text x="338" y="185">10 µF</text>
-  <text x="512" y="135">jak kablosu</text><text x="512" y="152">UÇ (tip) teli</text>
-  <text x="512" y="190">gövde (sleeve) teli</text>
-  <text x="130" y="152" font-size="11">düğüm ≈ 1,65V</text>
+ <path d="M102,440 C140,420 210,260 214,200" stroke="#e6a100" stroke-width="3" fill="none"/>
+ <g font-size="9" fill="#111">
+  <text x="44" y="412">10k</text><text x="86" y="488">10k</text><text x="124" y="460">1k</text><text x="138" y="492" fill="#2a5db0">+/−</text>
  </g>
-</svg></div>
-<table>
-<tr><th>Nereden</th><th>Nereye</th></tr>
-<tr><td>Teensy 3.3V</td><td>1. 10 kΩ direncin bir bacağı</td></tr>
-<tr><td>1. 10 kΩ'un diğer bacağı</td><td><b>Düğüm</b> (breadboard'da aynı sıra)</td></tr>
-<tr><td>Teensy GND</td><td>2. 10 kΩ direncin bir bacağı; diğer bacağı <b>düğüme</b></td></tr>
-<tr><td>Düğüm</td><td>Teensy <b>A2 (pin 16)</b></td></tr>
-<tr><td>Düğüm</td><td>1 kΩ direnç → kondansatörün <b>+</b> (uzun) bacağı</td></tr>
-<tr><td>Kondansatörün <b>−</b> (kısa, beyaz şeritli) bacağı</td><td>Jak kablosunun <b>uç (tip)</b> teli</td></tr>
-<tr><td>Jak kablosunun <b>gövde (sleeve)</b> teli</td><td>Teensy GND</td></tr>
-</table>
-<div class="not"><b>Hangi tel uç (tip)?</b> Multimetreyi "bip" (süreklilik) moduna al. Bir ucunu jakın en sivri ucuna değdir, diğerini tellere sırayla değdir. Bip öten tel = uç (tip). Jakın uzun gövdesiyle bip öten tel = gövde (sleeve).</div>
-<h3>Kontrol</h3>
-<ul class="check">
-<li><span class="kutu"></span>Kondansatör yönü doğru: <b>+</b> (uzun bacak) 1 kΩ'a, <b>−</b> (şeritli taraf) jak kablosuna.</li>
-<li><span class="kutu"></span>USB takılıyken multimetre (DC V) ile A2–GND arası ≈ <b>1,65V</b> ölçülüyor.</li>
-<li><span class="kutu"></span>UMC22'nin çıkış düğmesi düşük-orta seviyede.</li>
+ <circle cx="70" cy="504" r="4" fill="#c0392b"/><circle cx="20" cy="504" r="4" fill="#555"/>
+ <path d="M70,504 L70,540" stroke="#c0392b" stroke-width="2"/><path d="M20,504 L20,540" stroke="#555" stroke-width="2"/>
+ <text x="66" y="552" font-size="9">jak UÇ</text><text x="2" y="552" font-size="9">GÖVDE</text>
+</svg>
+</div>
+<div>
+<p><b>Planın özeti:</b></p>
+<ul>
+<li><b>Teensy</b> 1.–24. sıraları kaplar. USB ağzı yukarıda, breadboard'un dışına taşar.</li>
+<li><b>PCM5102A</b> sağ altta durur: pinleri <b>j sütununda, 25–30. sıralarda</b>, gövdesi sağa, breadboard'un dışına taşar.</li>
+<li><b>Giriş devresi</b> sol altta durur: <b>26–30. sıralar, a–e delikleri</b>.</li>
+<li>Sol kenardaki <b>+ ray = 3,3V</b>, <b>− ray = GND</b>.</li>
 </ul>
-
-<h2>6. Blok 3 – Nektar klavye (USB host)</h2>
-<table>
-<tr><th>Teensy USB host pini</th><th>USB kablosu teli (genelde)</th></tr>
-<tr><td>5V</td><td>kırmızı</td></tr>
-<tr><td>D−</td><td>beyaz</td></tr>
-<tr><td>D+</td><td>yeşil</td></tr>
-<tr><td>GND</td><td>siyah</td></tr>
+<p class="kucuk">Çizim sadece yerleşimi gösterir. Kabloların sırası ve tek tek nereye gideceği aşağıdaki adımlarda.</p>
+<div class="not"><b>Teensy'nin pinleri hangi sıraya denk geliyor?</b> (Teensy tam 1. sıradan başlarsa)
+<table style="margin-top:4px">
+<tr><th>Sol taraf (c sütunu)</th><th>Sıra</th><th>Sağ taraf (g sütunu)</th></tr>
+<tr><td>GND</td><td>1</td><td>VIN (5V)</td></tr>
+<tr><td>pin 0</td><td>2</td><td>GND</td></tr>
+<tr><td>…</td><td>6</td><td>pin 21</td></tr>
+<tr><td>…</td><td>7</td><td>pin 20</td></tr>
+<tr><td>pin 7</td><td>9</td><td>…</td></tr>
+<tr><td>…</td><td>11</td><td>pin 16 (A2)</td></tr>
+<tr><td>3.3V</td><td>15</td><td>GND</td></tr>
 </table>
-<div class="not"><b>Renkleri mutlaka doğrula:</b> Bazı ucuz kablolarda renkler farklıdır. Multimetreyi bip moduna al. Dişi USB ucunun içindeki 4 metal şeridi tellere sırayla değdir. USB'nin ağzına bakınca (plastik dil altta, şeritler üstte) soldan sağa: <b>1 = 5V, 2 = D−, 3 = D+, 4 = GND</b>. Hangi telin hangi şeride gittiğini kâğıda yaz.</div>
-<div class="uyari">5V ile GND'yi karıştırma! Ters bağlarsan Nektar ya da Teensy zarar görebilir. Emin değilsen takmadan önce bana yaz ya da hocaya göster.</div>
-<ul class="check">
-<li><span class="kutu"></span>4 tel doğrulandı ve kâğıda yazıldı.</li>
-<li><span class="kutu"></span>Teensy'yi USB'ye takınca Nektar'ın ışıkları yanıyor.</li>
-</ul>
+<span class="kucuk">Teensy'nin kutusundan çıkan <b>renkli pin kartıyla</b> mutlaka karşılaştır. Uymazsa dur ve bana yaz.</span></div>
+</div>
+</div>
 
-<h2>7. Blok 4 – Butonlar ve LED</h2>
+<!-- ======================= BÖLÜM D ======================= -->
+<div class="sayfa"></div>
+<h2>D. Teensy'yi yerleştir</h2>
+<div class="adim"><span class="k"></span><span class="no">1</span><div class="t">Breadboard'u önüne <b>dik</b> koy. <b>1. sıra üstte</b>, a sütunu solda olsun.</div></div>
+<div class="adim"><span class="k"></span><span class="no">2</span><div class="t">Teensy'yi <b>USB ağzı yukarı</b> bakacak şekilde tut. Üzerindeki yazılar sana dönük olsun.</div></div>
+<div class="adim"><span class="k"></span><span class="no">3</span><div class="t">Teensy'yi oluğun üstüne koy. <b>En üstteki pinler 1. sıraya</b> girsin. Sol pinler <b>c</b>, sağ pinler <b>g</b> sütununa denk gelsin. USB ağzı breadboard'un üst kenarından taşar, bu normal.</div></div>
+<div class="adim"><span class="k"></span><span class="no">4</span><div class="t">İki başparmağınla, pinleri eğmeden <b>yavaşça ve eşit</b> bastır. Teensy breadboard'a tam oturmalı.</div></div>
+<div class="adim"><span class="k"></span><span class="no">5</span><div class="t">Kontrol: Teensy'nin solunda <b>a, b</b> delikleri, sağında <b>h, i, j</b> delikleri boş kalmalı. Kabloları bu boş deliklere takacağız.</div></div>
+<div class="adim"><span class="k"></span><span class="no">6</span><div class="t">Pin kartıyla kontrol et: sol 1. sıra = <b>GND</b>, sağ 1. sıra = <b>VIN</b>, sağ 11. sıra = <b>16 (A2)</b>, sol 15. sıra = <b>3.3V</b>.</div></div>
+<div class="not"><b>Kural:</b> "Teensy'nin X pinine bağla" = X pininin bulunduğu <b>sıradaki boş deliğe</b> kablo tak. Örneğin VIN 1. sıranın sağındaysa kabloyu <b>1. sıra h</b> deliğine takarsın.</div>
+
+<h2>E. Güç rayları</h2>
+<div class="adim"><span class="k"></span><span class="no">7</span><div class="t"><b>Siyah</b> kablo: <b>sol 1. sıra a</b> (Teensy GND) → sol <b>− (mavi) ray</b>.</div></div>
+<div class="adim"><span class="k"></span><span class="no">8</span><div class="t"><b>Kırmızı</b> kablo: <b>sol 15. sıra a</b> (Teensy 3.3V) → sol <b>+ (kırmızı) ray</b>.</div></div>
+<div class="uyari">Adım 8'de kablo <b>3.3V</b>'a gidiyor, <b>VIN'e değil</b>. + raya asla VIN (5V) bağlama.</div>
+
+<h2>F. Ses çıkışı: PCM5102A (Aşama 1 için)</h2>
+<div class="adim"><span class="k"></span><span class="no">9</span><div class="t">PCM5102A'nın 6 pinini <b>j sütununa</b>, <b>25. sıradan 30. sıraya</b> kadar tak. Modülün gövdesi <b>sağa</b>, breadboard'un dışına taşsın.</div></div>
+<div class="adim"><span class="k"></span><span class="no">10</span><div class="t">Modülün üstündeki pin yazılarını oku ve aşağıdaki tabloya yaz (ör. 25. sıra = SCK):</div></div>
 <table>
-<tr><th>Teensy pini</th><th>Bağlantı</th><th>Görevi (sonraki aşamalar)</th></tr>
-<tr><td>Pin 2</td><td>Buton 1 → GND</td><td>Mod: çalgı / klavye</td></tr>
-<tr><td>Pin 3</td><td>Buton 2 → GND</td><td>Önceki çalgı sesi</td></tr>
-<tr><td>Pin 4</td><td>Buton 3 → GND</td><td>Sonraki çalgı sesi</td></tr>
-<tr><td>Pin 5</td><td>Buton 4 → GND</td><td>Synth / sample geçişi</td></tr>
-<tr><td>Pin 13</td><td>Kart üzerindeki LED</td><td>Durum göstergesi (kablo gerekmez)</td></tr>
+<tr><th>Sıra</th><td>25</td><td>26</td><td>27</td><td>28</td><td>29</td><td>30</td></tr>
+<tr><th>PCM pin adı</th><td><span class="bos"></span></td><td><span class="bos"></span></td><td><span class="bos"></span></td><td><span class="bos"></span></td><td><span class="bos"></span></td><td><span class="bos"></span></td></tr>
 </table>
-<p>Butonu breadboard'un ortasındaki <b>oluğun üstüne</b> tak. Bir bacağını Teensy pinine, <b>çapraz karşısındaki</b> bacağını GND'ye bağla. Direnç gerekmez; Teensy'nin içindeki direnç kullanılır (<code>INPUT_PULLUP</code>).</p>
-<p class="kucuk">Görevler sonra değişebilir. Bu blok Aşama 6–7'de lazım olacak, yarın kurmak şart değil.</p>
+<p>Şimdi 6 kablo takacaksın. Her kablonun <b>bir ucu</b> PCM pininin sırasındaki boş deliğe (f, g, h ya da i), <b>diğer ucu</b> Teensy pininin sırasındaki boş deliğe (h, i ya da j) gider:</p>
+<div class="adim"><span class="k"></span><span class="no">11</span><div class="t"><b>VIN</b> yazan PCM pini → Teensy <b>VIN</b> (sağ <b>1.</b> sıra). <i>Kırmızı kablo.</i></div></div>
+<div class="adim"><span class="k"></span><span class="no">12</span><div class="t"><b>GND</b> yazan PCM pini → Teensy <b>GND</b> (sağ <b>2.</b> sıra). <i>Siyah kablo.</i></div></div>
+<div class="adim"><span class="k"></span><span class="no">13</span><div class="t"><b>BCK</b> → Teensy <b>pin 21</b> (sağ <b>6.</b> sıra). <i>Sarı kablo.</i></div></div>
+<div class="adim"><span class="k"></span><span class="no">14</span><div class="t"><b>LCK</b> → Teensy <b>pin 20</b> (sağ <b>7.</b> sıra). <i>Yeşil kablo.</i></div></div>
+<div class="adim"><span class="k"></span><span class="no">15</span><div class="t"><b>DIN</b> → Teensy <b>pin 7</b> (<b>sol</b> <b>9.</b> sıra, a ya da b deliği). <i>Mavi kablo.</i> Bu kablo Teensy'nin üstünden karşıya geçer, sorun değil.</div></div>
+<div class="adim"><span class="k"></span><span class="no">16</span><div class="t"><b>SCK</b> → Teensy <b>GND</b> (sağ <b>15.</b> sıra). <i>Siyah kablo.</i> Böylece modül kendi saatini kullanır.</div></div>
+<div class="adim"><span class="k"></span><span class="no">17</span><div class="t">Kontrol: 6 kabloyu tek tek bu listeyle karşılaştır. Breadboard'un <b>fotoğrafını çek</b>.</div></div>
+<div class="not"><b>Burada dur.</b> Devrenin geri kalanı Aşama 3'e kadar gerekmiyor. İstersen önce Aşama 1'i (440 Hz ses) dene, sonra G'ye geç. İkisini aynı gün de yapabilirsin.</div>
 
-<h2>8. Yarın için kontrol listesi</h2>
-<ul class="check">
-<li><span class="kutu"></span>Lehimler bitti (Bölüm 2).</li>
-<li><span class="kutu"></span>PCM5102A köprülerinin fotoğrafı çekildi.</li>
-<li><span class="kutu"></span>Blok 1 (ses çıkışı) kuruldu, tabloyla karşılaştırıldı.</li>
-<li><span class="kutu"></span>Blok 2 (giriş devresi) kuruldu, A2 ≈ 1,65V ölçüldü.</li>
-<li><span class="kutu"></span>USB kablo renkleri doğrulandı.</li>
-<li><span class="kutu"></span>Breadboard'un fotoğrafı çekildi (tez için de).</li>
-</ul>
+<!-- ======================= BÖLÜM G ======================= -->
+<div class="sayfa"></div>
+<h2>G. Ses girişi devresi (UMC22 → A2)</h2>
+<p><b>Ne işe yarar:</b> UMC22'nin sesi artı ve eksi arasında salınır. Teensy ise sadece 0 ile 3,3V arasını okuyabilir. Bu devre sesi <b>1,65V'un etrafına</b> oturtur. Max'teki <code>+~ 0.5</code> gibi düşün: sesi ortaya kaydırır.</p>
 
-<h2>9. Kaldığımız yer</h2>
+<svg viewBox="0 0 640 200" width="100%">
+ <g stroke="#111" stroke-width="2" fill="none">
+  <path d="M110,20 L110,40"/><rect x="100" y="40" width="20" height="40" fill="#f7e9c8"/><path d="M110,80 L110,150"/>
+  <rect x="100" y="110" width="20" height="40" fill="#f7e9c8" transform="translate(0,0)"/>
+  <path d="M110,150 L110,180"/>
+  <path d="M110,95 L30,95"/><path d="M110,95 L220,95"/><rect x="220" y="85" width="50" height="20" fill="#f7e9c8"/><path d="M270,95 L340,95"/>
+  <path d="M340,75 L340,115"/><path d="M356,75 L356,115"/><path d="M356,95 L450,95"/>
+  <path d="M520,180 L520,150"/>
+ </g>
+ <circle cx="110" cy="95" r="4" fill="#111"/><circle cx="460" cy="95" r="6" fill="#c0392b"/>
+ <g font-size="12" fill="#111">
+  <text x="90" y="14">3,3V (+ ray)</text><text x="128" y="64">10 kΩ (adım 18)</text><text x="128" y="134">10 kΩ (adım 19)</text>
+  <text x="85" y="196">GND (− ray)</text><text x="490" y="196">GND (− ray)</text>
+  <text x="2" y="90" font-weight="bold">A2</text><text x="2" y="108" font-size="10">(adım 20)</text>
+  <text x="120" y="88" font-size="10">26. sıra = düğüm</text>
+  <text x="218" y="78">1 kΩ (adım 21)</text>
+  <text x="324" y="70" font-weight="bold">+</text><text x="360" y="70" font-weight="bold">−</text><text x="318" y="135">10 µF (adım 22)</text>
+  <text x="472" y="92">jak UÇ (adım 24)</text><text x="472" y="140">jak GÖVDE (adım 25)</text>
+ </g>
+</svg>
+
+<div class="adim"><span class="k"></span><span class="no">18</span><div class="t"><b>10 kΩ direnç</b> (kahverengi-siyah-turuncu): bir bacağı sol <b>+ ray</b>, diğer bacağı <b>26. sıra a</b>.</div></div>
+<div class="adim"><span class="k"></span><span class="no">19</span><div class="t">İkinci <b>10 kΩ direnç</b>: bir bacağı <b>26. sıra b</b>, diğer bacağı sol <b>− ray</b>.</div></div>
+<div class="adim"><span class="k"></span><span class="no">20</span><div class="t"><b>Kablo</b>: <b>26. sıra c</b> → Teensy <b>A2</b> (sağ <b>11.</b> sıra, h deliği). <i>Turuncu kablo.</i> Teensy'nin üstünden geçer.</div></div>
+<div class="adim"><span class="k"></span><span class="no">21</span><div class="t"><b>1 kΩ direnç</b> (kahverengi-siyah-kırmızı): bir bacağı <b>26. sıra d</b>, diğer bacağı <b>28. sıra d</b>.</div></div>
+<div class="adim"><span class="k"></span><span class="no">22</span><div class="t"><b>Kondansatör</b>: <b>uzun bacak (+)</b> → <b>28. sıra e</b>. <b>Kısa bacak (−, gövdedeki beyaz şeritli taraf)</b> → <b>30. sıra e</b>.</div></div>
+<div class="uyari">Kondansatörün yönü önemli. Uzun bacak (+) 1 kΩ'un olduğu 28. sıraya gidecek. Ters takarsan devre çalışmaz, kondansatör de zarar görebilir.</div>
+<div class="adim"><span class="k"></span><span class="no">23</span><div class="t">Jak kablosunda hangi telin <b>UÇ (tip)</b> olduğunu bul. Multimetreyi <b>bip (süreklilik)</b> moduna al. Bir probu jakın <b>en sivri ucuna</b> değdir, diğer probu tellere sırayla değdir. Bip öten tel = <b>UÇ</b>. Öteki tel = <b>GÖVDE</b>.</div></div>
+<div class="adim"><span class="k"></span><span class="no">24</span><div class="t">Jakın <b>UÇ</b> teli → <b>30. sıra a</b>. Kondansatörün kısa bacağıyla aynı sıradadır, yani birbirine bağlanır.</div></div>
+<div class="adim"><span class="k"></span><span class="no">25</span><div class="t">Jakın <b>GÖVDE</b> teli → sol <b>− ray</b>.</div></div>
+<div class="adim"><span class="k"></span><span class="no">26</span><div class="t"><b>Ölçüm:</b> Teensy'yi USB'ye tak. Multimetreyi <b>DC V</b> moduna al. Siyah probu <b>− ray</b>'a, kırmızı probu <b>26. sıra e</b> deliğine değdir. Ekranda <b>yaklaşık 1,6–1,7V</b> görmelisin. Görmezsen USB'yi çıkar ve bana yaz.</div></div>
+<div class="adim"><span class="k"></span><span class="no">27</span><div class="t">USB'yi çıkar. Jakı <b>UMC22'nin çıkışına</b> tak. UMC22'nin çıkış düğmesini <b>düşük</b> başlat.</div></div>
+
+<!-- ======================= BÖLÜM H ======================= -->
+<div class="sayfa"></div>
+<h2>H. Nektar klavye için USB kablosu (lehimden önce)</h2>
+<p>Kesilmiş USB uzatma kablosunun <b>dişi ucu</b> Nektar'a takılacak. İçindeki 4 telin hangisinin ne olduğunu bulacaksın.</p>
+<svg viewBox="0 0 360 120" width="320">
+ <rect x="40" y="20" width="240" height="70" rx="6" fill="#ccc" stroke="#555" stroke-width="2"/>
+ <rect x="60" y="62" width="200" height="16" fill="#333"/>
+ <g fill="#d4a017"><rect x="78" y="34" width="26" height="12"/><rect x="128" y="34" width="22" height="12"/><rect x="172" y="34" width="22" height="12"/><rect x="218" y="34" width="26" height="12"/></g>
+ <g font-size="11" fill="#111"><text x="84" y="108">1</text><text x="134" y="108">2</text><text x="178" y="108">3</text><text x="226" y="108">4</text></g>
+ <text x="290" y="60" font-size="10">← plastik dil</text><text x="290" y="74" font-size="10">altta</text>
+</svg>
+<div class="adim"><span class="k"></span><span class="no">28</span><div class="t">Dişi USB ucunun ağzına bak: <b>plastik dil altta</b>, metal şeritler üstte olsun. Soldan sağa: <b>1 = 5V</b>, <b>2 = D−</b>, <b>3 = D+</b>, <b>4 = GND</b>.</div></div>
+<div class="adim"><span class="k"></span><span class="no">29</span><div class="t">Multimetreyi <b>bip</b> moduna al. Bir probu 1 numaralı şeride değdir, diğer probu tellere sırayla değdir. Bip öten telin rengini yaz. 2, 3 ve 4 için tekrarla.</div></div>
 <table>
-<tr><th>Konu</th><th>Durum</th></tr>
-<tr><td>gen~ Adım 1 – Dalgalar</td><td>✔ Bitti</td></tr>
-<tr><td>gen~ Adım 2 – Filtre</td><td>✔ Bitti</td></tr>
-<tr><td>gen~ Adım 3 – Zarf</td><td>Şu an burada (<code>in 2</code>, <code>param atak</code>, <code>param bitis</code>, <code>mstosamps</code>, <code>slide</code>, <code>*</code>)</td></tr>
-<tr><td>gen~ Adım 4 – Çıkış, Adım 5 – Nektar testi, Adım 6 – Dışa aktarma</td><td>Sırada</td></tr>
-<tr><td>Teensy Aşama 0 (kurulum) ve Aşama 1 (ses çıkışı)</td><td>Devre kurulunca</td></tr>
+<tr><th>Şerit</th><th>Görev</th><th>Genelde</th><th>Senin kablonda</th><th>Teensy USB host pini</th></tr>
+<tr><td>1</td><td>5V</td><td>kırmızı</td><td><span class="bos"></span></td><td>5V</td></tr>
+<tr><td>2</td><td>D−</td><td>beyaz</td><td><span class="bos"></span></td><td>D−</td></tr>
+<tr><td>3</td><td>D+</td><td>yeşil</td><td><span class="bos"></span></td><td>D+</td></tr>
+<tr><td>4</td><td>GND</td><td>siyah</td><td><span class="bos"></span></td><td>GND</td></tr>
 </table>
-<p>Dışa aktardığın <code>gen_export</code> klasörünü bana gönderince Teensy koduna (<code>AudioGenSynth</code>) geçeriz.</p>
+<div class="adim"><span class="k"></span><span class="no">30</span><div class="t">Bu tabloyu hocaya göster. Hoca telleri Teensy'nin üstündeki <b>USB host</b> yazan 5'li pin sırasına lehimler (Bölüm B, L2).</div></div>
+<div class="uyari">5V ile GND'yi karıştırma! Emin değilsen lehimden önce tablonun fotoğrafını bana at.</div>
+<div class="adim"><span class="k"></span><span class="no">31</span><div class="t">Lehimden sonra: Teensy'yi USB'ye tak, Nektar'ı dişi uca tak. <b>Nektar'ın ışıkları yanmalı.</b></div></div>
+
+<h2>I. Butonlar – şimdilik yok</h2>
+<p>Butonlar Aşama 6–7'de lazım olacak (pin 2, 3, 4, 5 → buton → GND). Breadboard'da yer kalmadığı için o zaman birlikte yerini düşünürüz. <b>Yarın buton takma.</b></p>
+
+<h2>J. Bitti mi? Kontrol listesi</h2>
+<div class="adim"><span class="k"></span><span class="no">✓</span><div class="t">Lehimler (L1–L5) bitti.</div></div>
+<div class="adim"><span class="k"></span><span class="no">✓</span><div class="t">PCM5102A'nın arka yüzünün fotoğrafı çekildi.</div></div>
+<div class="adim"><span class="k"></span><span class="no">✓</span><div class="t">Adım 1–17 bitti. Ses çıkışı kablolandı.</div></div>
+<div class="adim"><span class="k"></span><span class="no">✓</span><div class="t">Adım 18–27 bitti. 26. sırada ≈ 1,65V ölçüldü.</div></div>
+<div class="adim"><span class="k"></span><span class="no">✓</span><div class="t">USB tel renkleri tabloya yazıldı.</div></div>
+<div class="adim"><span class="k"></span><span class="no">✓</span><div class="t">Breadboard'un fotoğrafı çekildi (bana ve tez için).</div></div>
+
+<h2>K. Kaldığımız yer (Max gen~)</h2>
+<table>
+<tr><th>Adım</th><th>Durum</th></tr>
+<tr><td>1 – Dalgalar</td><td>✔ bitti</td></tr>
+<tr><td>2 – Filtre</td><td>✔ bitti</td></tr>
+<tr><td>3 – Zarf</td><td><b>Şu an burada:</b> <code>in 2</code>, <code>param atak</code>, <code>param bitis</code>, 2 × <code>mstosamps</code>, <code>slide</code>, <code>*</code></td></tr>
+<tr><td>4 – Çıkış · 5 – Nektar testi · 6 – Dışa aktarma</td><td>sırada</td></tr>
+</table>
+<p>gen~ bitince <code>gen_export</code> klasörünü bana gönder. Teensy koduna oradan devam ederiz.</p>
 </body></html>
